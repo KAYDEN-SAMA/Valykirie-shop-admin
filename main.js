@@ -126,7 +126,7 @@ coverInput.addEventListener('change', function(event) {
     }
 
     try {
-      const imgbbApiKey = '2728c1bfd377ac29cd56a5f3caf0ea31';
+      const imgbbApiKey = 'cedc63c0aa1c96f927f7298d452f28af';
       const imageUrl = await uploadImage(imgbbApiKey, coverInput.files[0]);
       const newOfferRef = ref(db, `shop/${title}`);
       set(newOfferRef, {
