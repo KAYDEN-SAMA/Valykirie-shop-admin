@@ -827,6 +827,8 @@
       const coverImg = document.createElement("img");
 coverImg.src = offerData.cover;
 coverImg.alt = offerData.title;
+let coverDiv = document.createElement("div");
+coverDiv.classList.add("cover"); // إضافة كلاس لو لزم الأمر
 
 coverDiv.appendChild(coverTitle);
 coverDiv.appendChild(coverImg);
