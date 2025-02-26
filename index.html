@@ -570,7 +570,7 @@
     import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-database.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-auth.js";
     import { setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-auth.js";
-
+  
     const firebaseConfig = {
       apiKey: "AIzaSyDtN-6_8_adIwoOsdlymqz3OQlLTIO51BA",
       authDomain: "valkiri-app.firebaseapp.com",
@@ -580,11 +580,11 @@
       messagingSenderId: "28209650847",
       appId: "1:28209650847:web:65f73e68bedf8b43f516aa"
     };
-
+  
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
-
+  
     const emailInput = document.getElementById("emailInput");
     const passwordInput = document.getElementById("passwordInput");
     const errorParagraph = document.getElementById("errorParagraph");
@@ -592,7 +592,7 @@
     const showPasswordCheckbox = document.getElementById("showPassword");
     const loginForm = document.getElementById("LoginForm");
     const dataSection = document.getElementById("dataSection");
-    
+  
     // Create floating petals effect
     function createPetals() {
       const petalCount = 15;
@@ -616,7 +616,7 @@
       }
     }
     createPetals();
-
+  
     onAuthStateChanged(auth, user => {
       if (user) {
         loginForm.style.display = "none";
@@ -627,7 +627,7 @@
         dataSection.style.display = "none";
       }
     });
-
+  
     function loadUserData(user) {
       const adminUid = user.uid;
       get(ref(db, `admins/${adminUid}`)).then(adminSnapshot => {
@@ -639,23 +639,22 @@
         }
       });
     }
-
+  
     function loadOfferData() {
       const header = document.getElementById("header");
       const addOfferDiv = document.getElementById("addOfferDiv");
-      get(ref(db, `shop`)).then(offersSnapchot => {
-        if (offersSnapchot.exists()) {
+      get(ref(db, `shop`)).then(offersSnapshot => {
+        if (offersSnapshot.exists()) {
           dataSection.innerHTML = "";
           addOfferDiv.innerHTML = "";
-
+  
           const addOfferBtn = document.createElement('i');
           addOfferBtn.className = "fa-sharp fa-solid fa-plus";
           addOfferBtn.id = 'addOfferBtn';
-
+  
           addOfferDiv.appendChild(addOfferBtn);
-
+  
           addOfferBtn.addEventListener('click', () => {
-            // Create overlay for modal
             const overlay = document.createElement('div');
             overlay.className = 'overlay';
             document.body.appendChild(overlay);
@@ -683,16 +682,16 @@
             
             document.body.appendChild(dialog);
             document.body.classList.add('modal-open');
-
+  
             const confirmBtn = document.getElementById('confirmBtn');
             const cancelBtn = document.getElementById('cancelBtn');
             const coverInput = document.getElementById('coverInput');
             const coverPreview = document.getElementById('coverPreview');
             const errorElm = document.getElementById('errorElm');
-
+  
             coverInput.addEventListener('change', function(event) {
               const coverImageFile = event.target.files[0];
-              if (coverImageFile && coverImageFile.type.match('image.*')) {
+              if (coverImageFile?.type.match('image.*')) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                   coverPreview.src = e.target.result;
@@ -709,45 +708,42 @@
               const titleInput = document.getElementById('title');
               const descriptionInput = document.getElementById('description');
               const priceInput = document.getElementById('price');
-
+  
               const title = titleInput.value.trim();
               const description = descriptionInput.value.trim();
               const price = priceInput.value.trim();
-
-              if (title === "" || description === "" || price === "") {
+  
+              if (!title || !description || !price) {
                 errorElm.textContent = "يرجى ملء جميع الحقول المطلوبة";
                 return;
               }
-
+  
               if (!coverInput.files[0]) {
                 errorElm.textContent = "يرجى اختيار صورة للعرض";
                 return;
               }
-
+  
               try {
                 const imgbbApiKey = '8b915a0e19cdf437724f69f8342d8a45';
                 const imageUrl = await uploadImage(imgbbApiKey, coverInput.files[0]);
                 const newOfferRef = ref(db, `shop/${title}`);
-                set(newOfferRef, {
-                  title: title,
-                  description: description,
-                  price: price,
+                await set(newOfferRef, {
+                  title,
+                  description,
+                  price,
                   cover: imageUrl,
-                }).then(() => {
-                  showNotification('تم إضافة العرض بنجاح!');
-                  dialog.remove();
-                  overlay.remove();
-                  document.body.classList.remove('modal-open');
-                  location.reload();
-                }).catch(error => {
-                  errorElm.textContent = 'حدث خطأ أثناء إضافة العرض: ' + error.message;
                 });
+                showNotification('تم إضافة العرض بنجاح!');
+                dialog.remove();
+                overlay.remove();
+                document.body.classList.remove('modal-open');
+                location.reload();
               } catch (error) {
-                console.error('Error uploading image:', error);
-                errorElm.textContent = "حدث خطأ أثناء رفع الصورة";
+                console.error('Error:', error);
+                errorElm.textContent = error.message || "حدث خطأ أثناء إضافة العرض";
               }
             });
-
+  
             cancelBtn.addEventListener('click', () => {
               dialog.remove();
               overlay.remove();
@@ -755,64 +751,33 @@
             });
           });
           
-          const offersData = offersSnapchot.val();
-          const sortedOfferIds = Object.keys(offersData).sort((a, b) => {
-            const valueA = offersData[a].toString();
-            const valueB = offersData[b].toString();
-            return valueA.localeCompare(valueB, 'ar');
-          });
+          const offersData = offersSnapshot.val();
+          const sortedOfferIds = Object.keys(offersData).sort((a, b) => 
+            offersData[a].title.localeCompare(offersData[b].title, 'ar')
+          );
           
           sortedOfferIds.forEach(offerId => {
-            const offerData = offersData[offerId];
-            createOfferCard(offerId, offerData);
+            createOfferCard(offerId, offersData[offerId]);
           });
         } else {
           addOfferDiv.innerHTML = "";
-
           const addOfferBtn = document.createElement('i');
           addOfferBtn.className = "fa-sharp fa-solid fa-plus";
           addOfferBtn.id = 'addOfferBtn';
-
           addOfferDiv.appendChild(addOfferBtn);
           
-          // Show message when no offers exist
           const noOffersMessage = document.createElement('div');
           noOffersMessage.style.textAlign = 'center';
           noOffersMessage.style.padding = '2rem';
-          noOffersMessage.style.width = '100%';
           noOffersMessage.innerHTML = `
             <h2 style="color: #e68fac; margin-bottom: 1rem;">لا توجد عروض حالياً</h2>
             <p>اضغط على زر الإضافة لإنشاء عرض جديد</p>
           `;
           dataSection.appendChild(noOffersMessage);
-          
-          addOfferBtn.addEventListener('click', () => {
-            // Add new offer function would be called here
-            // Similar to the implementation above
-          });
         }
       });
     }
-
-    async function uploadImage(apiKey, imageFile) {
-      const imgbbApiUrl = 'https://api.imgbb.com/1/upload';
-      const formData = new FormData();
-      formData.append('key', apiKey);
-      formData.append('image', imageFile);
-
-      const response = await fetch(imgbbApiUrl, {
-        method: 'POST',
-        body: formData,
-      });
-
-      const json = await response.json();
-      if (json.success) {
-        return json.data.url;
-      } else {
-        throw new Error('فشل رفع الصورة');
-      }
-    }
-
+  
     function createOfferCard(offerId, offerData) {
       const card = document.createElement("div");
       card.className = "offer-card";
@@ -823,306 +788,253 @@
       const titleEl = document.createElement("p");
       titleTitle.textContent = "العنوان:";
       titleEl.textContent = offerData.title;
-      titleEl.className = "offer-title";
+      titleDiv.append(titleTitle, titleEl);
+  
+      // Description section
+      const descriptionDiv = document.createElement("div");
+      const descriptionTitle = document.createElement("h3");
+      const descriptionEl = document.createElement("p");
+      descriptionTitle.textContent = "الوصف:";
+      descriptionEl.textContent = offerData.description;
+      descriptionDiv.append(descriptionTitle, descriptionEl);
+  
+      // Price section
+      const priceDiv = document.createElement("div");
+      const priceTitle = document.createElement("h3");
+      const priceEl = document.createElement("p");
+      priceTitle.textContent = "السعر:";
+      priceEl.textContent = offerData.price;
+      priceDiv.append(priceTitle, priceEl);
+  
+      // Cover section
+      const coverDiv = document.createElement("div");
+      coverDiv.className = "cover-div";
+      const coverTitle = document.createElement("h3");
+      coverTitle.textContent = "الصورة:";
       const coverImg = document.createElement("img");
-coverImg.src = offerData.cover;
-coverImg.alt = offerData.title;
-let coverDiv = document.createElement("div");
-coverDiv.classList.add("cover"); // إضافة كلاس لو لزم الأمر
-
-coverDiv.appendChild(coverTitle);
-coverDiv.appendChild(coverImg);
-
-// Actions section (edit and delete buttons)
-const actionsDiv = document.createElement("div");
-actionsDiv.style.justifyContent = "center";
-actionsDiv.style.marginTop = "1rem";
-
-// Edit button
-const editBtn = document.createElement("i");
-editBtn.className = "fa-solid fa-pen-to-square";
-editBtn.title = "تعديل";
-
-// Delete button
-const deleteBtn = document.createElement("i");
-deleteBtn.className = "fa-solid fa-trash";
-deleteBtn.title = "حذف";
-
-actionsDiv.appendChild(editBtn);
-actionsDiv.appendChild(deleteBtn);
-
-// Add all sections to card
-card.appendChild(titleDiv);
-card.appendChild(descriptionDiv);
-card.appendChild(priceDiv);
-card.appendChild(coverDiv);
-card.appendChild(actionsDiv);
-
-// Add card to data section
-dataSection.appendChild(card);
-
-// Edit button functionality
-editBtn.addEventListener('click', () => {
-  // Create overlay for modal
-  const overlay = document.createElement('div');
-  overlay.className = 'overlay';
-  document.body.appendChild(overlay);
-  overlay.style.display = 'block';
+      coverImg.src = offerData.cover;
+      coverImg.alt = offerData.title;
+      coverDiv.append(coverTitle, coverImg);
   
-  const dialog = document.createElement('div');
-  dialog.className = 'dialog';
-  dialog.innerHTML = `
-    <h3>تعديل العرض</h3>
-    <label for="editTitle">العنوان:</label>
-    <input type="text" id="editTitle" placeholder="العنوان" maxlength="12" value="${offerData.title}">
-    <label for="editDescription">الوصف:</label>
-    <input type="text" id="editDescription" placeholder="الوصف" maxlength="50" value="${offerData.description}">
-    <label for="editPrice">السعر:</label>
-    <input type="number" id="editPrice" placeholder="السعر" value="${offerData.price}">
-    <label for="editCoverInput">تغيير الصورة (اختياري):</label>
-    <input type="file" id="editCoverInput" accept="image/*">
-    <img id="editCoverPreview" src="${offerData.cover}" alt="معاينة الصورة">
-    <p id="editErrorElm" style="color: #e74c3c; font-size: 14px;"></p>
-    <div class="buttons-div">
-      <button id="editConfirmBtn">حفظ التغييرات</button>
-      <button id="editCancelBtn">إلغاء</button>
-    </div>
-  `;
+      // Actions section
+      const actionsDiv = document.createElement("div");
+      actionsDiv.style.justifyContent = "center";
+      actionsDiv.style.marginTop = "1rem";
   
-  document.body.appendChild(dialog);
-  document.body.classList.add('modal-open');
-
-  const editConfirmBtn = document.getElementById('editConfirmBtn');
-  const editCancelBtn = document.getElementById('editCancelBtn');
-  const editCoverInput = document.getElementById('editCoverInput');
-  const editCoverPreview = document.getElementById('editCoverPreview');
-  const editErrorElm = document.getElementById('editErrorElm');
-
-  editCoverInput.addEventListener('change', function(event) {
-    const coverImageFile = event.target.files[0];
-    if (coverImageFile && coverImageFile.type.match('image.*')) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        editCoverPreview.src = e.target.result;
-      };
-      reader.readAsDataURL(coverImageFile);
-    } else {
-      editErrorElm.textContent = "يرجى اختيار صورة صالحة";
-    }
-  });
+      const editBtn = document.createElement("i");
+      editBtn.className = "fa-solid fa-pen-to-square";
+      editBtn.title = "تعديل";
   
-  editConfirmBtn.addEventListener('click', async () => {
-    const editTitleInput = document.getElementById('editTitle');
-    const editDescriptionInput = document.getElementById('editDescription');
-    const editPriceInput = document.getElementById('editPrice');
-
-    const newTitle = editTitleInput.value.trim();
-    const newDescription = editDescriptionInput.value.trim();
-    const newPrice = editPriceInput.value.trim();
-
-    if (newTitle === "" || newDescription === "" || newPrice === "") {
-      editErrorElm.textContent = "يرجى ملء جميع الحقول المطلوبة";
-      return;
-    }
-
-    try {
-      let imageUrl = offerData.cover;
-      
-      // Only upload new image if file is selected
-      if (editCoverInput.files.length > 0) {
-        const imgbbApiKey = '8b915a0e19cdf437724f69f8342d8a45';
-        imageUrl = await uploadImage(imgbbApiKey, editCoverInput.files[0]);
-      }
-      
-      // If title changed, create new entry and delete old one
-      if (newTitle !== offerData.title) {
-        const newOfferRef = ref(db, `shop/${newTitle}`);
-        const oldOfferRef = ref(db, `shop/${offerId}`);
+      const deleteBtn = document.createElement("i");
+      deleteBtn.className = "fa-solid fa-trash";
+      deleteBtn.title = "حذف";
+  
+      actionsDiv.append(editBtn, deleteBtn);
+      card.append(titleDiv, descriptionDiv, priceDiv, coverDiv, actionsDiv);
+      dataSection.appendChild(card);
+  
+      // Edit functionality
+      editBtn.addEventListener('click', () => {
+        const overlay = document.createElement('div');
+        overlay.className = 'overlay';
+        document.body.appendChild(overlay);
         
-        set(newOfferRef, {
-          title: newTitle,
-          description: newDescription,
-          price: newPrice,
-          cover: imageUrl,
-        }).then(() => {
-          // Delete old entry
-          set(oldOfferRef, null).then(() => {
-            showNotification('تم تعديل العرض بنجاح!');
+        const dialog = document.createElement('div');
+        dialog.className = 'dialog';
+        dialog.innerHTML = `
+          <h3>تعديل العرض</h3>
+          <label for="editTitle">العنوان:</label>
+          <input type="text" id="editTitle" value="${offerData.title}" maxlength="12">
+          <label for="editDescription">الوصف:</label>
+          <input type="text" id="editDescription" value="${offerData.description}" maxlength="50">
+          <label for="editPrice">السعر:</label>
+          <input type="number" id="editPrice" value="${offerData.price}">
+          <label for="editCoverInput">تغيير الصورة (اختياري):</label>
+          <input type="file" id="editCoverInput" accept="image/*">
+          <img id="editCoverPreview" src="${offerData.cover}" alt="معاينة الصورة">
+          <p id="editErrorElm" style="color: #e74c3c; font-size: 14px;"></p>
+          <div class="buttons-div">
+            <button id="editConfirmBtn">حفظ التغييرات</button>
+            <button id="editCancelBtn">إلغاء</button>
+          </div>
+        `;
+        document.body.appendChild(dialog);
+        document.body.classList.add('modal-open');
+  
+        const editCoverInput = dialog.querySelector('#editCoverInput');
+        const editCoverPreview = dialog.querySelector('#editCoverPreview');
+        const editErrorElm = dialog.querySelector('#editErrorElm');
+  
+        editCoverInput.addEventListener('change', function(e) {
+          const file = e.target.files[0];
+          if (file?.type.match('image.*')) {
+            const reader = new FileReader();
+            reader.onload = (e) => editCoverPreview.src = e.target.result;
+            reader.readAsDataURL(file);
+          }
+        });
+  
+        dialog.querySelector('#editConfirmBtn').addEventListener('click', async () => {
+          const newTitle = dialog.querySelector('#editTitle').value.trim();
+          const newDescription = dialog.querySelector('#editDescription').value.trim();
+          const newPrice = dialog.querySelector('#editPrice').value.trim();
+  
+          if (!newTitle || !newDescription || !newPrice) {
+            editErrorElm.textContent = "يرجى ملء جميع الحقول المطلوبة";
+            return;
+          }
+  
+          try {
+            let imageUrl = offerData.cover;
+            if (editCoverInput.files[0]) {
+              const imgbbApiKey = '8b915a0e19cdf437724f69f8342d8a45';
+              imageUrl = await uploadImage(imgbbApiKey, editCoverInput.files[0]);
+            }
+  
+            const updates = {
+              title: newTitle,
+              description: newDescription,
+              price: newPrice,
+              cover: imageUrl
+            };
+  
+            if (newTitle !== offerData.title) {
+              await set(ref(db, `shop/${newTitle}`), updates);
+              await set(ref(db, `shop/${offerId}`), null);
+            } else {
+              await set(ref(db, `shop/${offerId}`), updates);
+            }
+  
+            showNotification('تم التعديل بنجاح!');
             dialog.remove();
             overlay.remove();
             document.body.classList.remove('modal-open');
             location.reload();
-          });
-        }).catch(error => {
-          editErrorElm.textContent = 'حدث خطأ أثناء تعديل العرض: ' + error.message;
+          } catch (error) {
+            editErrorElm.textContent = error.message || "حدث خطأ أثناء التعديل";
+          }
         });
-      } else {
-        // Update existing entry
-        const offerRef = ref(db, `shop/${offerId}`);
-        set(offerRef, {
-          title: newTitle,
-          description: newDescription,
-          price: newPrice,
-          cover: imageUrl,
-        }).then(() => {
-          showNotification('تم تعديل العرض بنجاح!');
+  
+        dialog.querySelector('#editCancelBtn').addEventListener('click', () => {
           dialog.remove();
           overlay.remove();
           document.body.classList.remove('modal-open');
-          location.reload();
-        }).catch(error => {
-          editErrorElm.textContent = 'حدث خطأ أثناء تعديل العرض: ' + error.message;
         });
-      }
-    } catch (error) {
-      console.error('Error updating offer:', error);
-      editErrorElm.textContent = "حدث خطأ أثناء تعديل العرض";
-    }
-  });
-
-  editCancelBtn.addEventListener('click', () => {
-    dialog.remove();
-    overlay.remove();
-    document.body.classList.remove('modal-open');
-  });
-});
-
-// Delete button functionality
-deleteBtn.addEventListener('click', () => {
-  // Create overlay for confirmation dialog
-  const overlay = document.createElement('div');
-  overlay.className = 'overlay';
-  document.body.appendChild(overlay);
-  overlay.style.display = 'block';
+      });
   
-  const dialog = document.createElement('div');
-  dialog.className = 'dialog';
-  dialog.innerHTML = `
-    <h3>تأكيد الحذف</h3>
-    <p>هل أنت متأكد من حذف العرض "${offerData.title}"؟</p>
-    <div class="buttons-div">
-      <button id="deleteConfirmBtn">حذف</button>
-      <button id="deleteCancelBtn">إلغاء</button>
-    </div>
-  `;
+      // Delete functionality
+      deleteBtn.addEventListener('click', () => {
+        const overlay = document.createElement('div');
+        overlay.className = 'overlay';
+        document.body.appendChild(overlay);
+        
+        const dialog = document.createElement('div');
+        dialog.className = 'dialog';
+        dialog.innerHTML = `
+          <h3>تأكيد الحذف</h3>
+          <p>هل أنت متأكد من حذف "${offerData.title}"؟</p>
+          <div class="buttons-div">
+            <button id="deleteConfirmBtn">حذف</button>
+            <button id="deleteCancelBtn">إلغاء</button>
+          </div>
+        `;
+        document.body.appendChild(dialog);
+        document.body.classList.add('modal-open');
   
-  document.body.appendChild(dialog);
-  document.body.classList.add('modal-open');
-
-  const deleteConfirmBtn = document.getElementById('deleteConfirmBtn');
-  const deleteCancelBtn = document.getElementById('deleteCancelBtn');
-  
-  deleteConfirmBtn.addEventListener('click', () => {
-    const offerRef = ref(db, `shop/${offerId}`);
-    set(offerRef, null).then(() => {
-      showNotification('تم حذف العرض بنجاح!');
-      dialog.remove();
-      overlay.remove();
-      document.body.classList.remove('modal-open');
-      location.reload();
-    }).catch(error => {
-      console.error('Error deleting offer:', error);
-      showNotification('حدث خطأ أثناء حذف العرض', 'error');
-    });
-  });
-
-  deleteCancelBtn.addEventListener('click', () => {
-    dialog.remove();
-    overlay.remove();
-    document.body.classList.remove('modal-open');
-  });
-});
-}
-
-// Show password toggle functionality
-showPasswordCheckbox.addEventListener('change', () => {
-  if (showPasswordCheckbox.checked) {
-    passwordInput.type = "text";
-  } else {
-    passwordInput.type = "password";
-  }
-});
-
-// Login functionality
-loginButton.addEventListener('click', () => {
-  const email = emailInput.value.trim();
-  const password = passwordInput.value;
-  
-  if (email === "" || password === "") {
-    errorParagraph.textContent = "يرجى إدخال البريد الإلكتروني وكلمة المرور";
-    errorParagraph.style.display = "block";
-    return;
-  }
-  
-  setPersistence(auth, browserLocalPersistence)
-    .then(() => {
-      signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          const user = userCredential.user;
-          // Check if user is admin
-          get(ref(db, `admins/${user.uid}`)).then(adminSnapshot => {
-            if (adminSnapshot.exists()) {
-              const adminData = adminSnapshot.val();
-              if (adminData.isAllowed === true) {
-                errorParagraph.style.display = "none";
-                // Redirect to admin panel or show admin content
-              } else {
-                errorParagraph.textContent = "ليس لديك صلاحية للوصول إلى لوحة الإدارة";
-                errorParagraph.style.display = "block";
-                auth.signOut();
-              }
-            } else {
-              errorParagraph.textContent = "ليس لديك صلاحية للوصول إلى لوحة الإدارة";
-              errorParagraph.style.display = "block";
-              auth.signOut();
-            }
-          });
-        })
-        .catch((error) => {
-          if (error.code === "auth/invalid-email" || error.code === "auth/wrong-password" || error.code === "auth/user-not-found") {
-            errorParagraph.textContent = "البريد الإلكتروني أو كلمة المرور غير صحيحة";
-          } else {
-            errorParagraph.textContent = "خطأ في تسجيل الدخول: " + error.message;
+        dialog.querySelector('#deleteConfirmBtn').addEventListener('click', async () => {
+          try {
+            await set(ref(db, `shop/${offerId}`), null);
+            showNotification('تم الحذف بنجاح!');
+            dialog.remove();
+            overlay.remove();
+            document.body.classList.remove('modal-open');
+            location.reload();
+          } catch (error) {
+            console.error('Delete error:', error);
+            showNotification('حدث خطأ أثناء الحذف', 'error');
           }
-          errorParagraph.style.display = "block";
         });
+  
+        dialog.querySelector('#deleteCancelBtn').addEventListener('click', () => {
+          dialog.remove();
+          overlay.remove();
+          document.body.classList.remove('modal-open');
+        });
+      });
+    }
+  
+    async function uploadImage(apiKey, imageFile) {
+      const formData = new FormData();
+      formData.append('key', apiKey);
+      formData.append('image', imageFile);
+  
+      const response = await fetch('https://api.imgbb.com/1/upload', {
+        method: 'POST',
+        body: formData
+      });
+  
+      const data = await response.json();
+      if (!data.success) throw new Error(data.error.message);
+      return data.data.url;
+    }
+  
+    // Password toggle
+    showPasswordCheckbox.addEventListener('change', () => {
+      passwordInput.type = showPasswordCheckbox.checked ? "text" : "password";
     });
-});
+  
+    // Login handler
+    loginButton.addEventListener('click', () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+  
+      if (!email || !password) {
+        showError("يرجى إدخال البريد الإلكتروني وكلمة المرور");
+        return;
+      }
+  
+      setPersistence(auth, browserLocalPersistence)
+        .then(() => signInWithEmailAndPassword(auth, email, password))
+        .then(({ user }) => verifyAdmin(user))
+        .catch(handleLoginError);
+    });
+  
+    async function verifyAdmin(user) {
+      const snapshot = await get(ref(db, `admins/${user.uid}`));
+      if (!snapshot.exists() || !snapshot.val().isAllowed) {
+        throw new Error("ليس لديك صلاحية الوصول");
+      }
+      errorParagraph.style.display = "none";
+    }
+  
+    function handleLoginError(error) {
+      const message = {
+        'auth/invalid-email': 'بريد إلكتروني غير صالح',
+        'auth/wrong-password': 'كلمة مرور خاطئة',
+        'auth/user-not-found': 'المستخدم غير موجود'
+      }[error.code] || error.message;
+  
+      showError(message);
+      auth.signOut();
+    }
+  
+    function showError(text) {
+      errorParagraph.textContent = text;
+      errorParagraph.style.display = "block";
+    }
+  
+    function showNotification(message, type = 'success') {
+      const notification = document.createElement('div');
+      notification.textContent = message;
+      notification.className = `notification ${type}`;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 500);
+      }, 3000);
+    }
+  </script>
 
-// Notification function
-function showNotification(message, type = 'success') {
-  const notification = document.createElement('div');
-  notification.textContent = message;
-  notification.style.position = 'fixed';
-  notification.style.bottom = '20px';
-  notification.style.right = '20px';
-  notification.style.padding = '10px 20px';
-  notification.style.borderRadius = '5px';
-  notification.style.color = '#fff';
-  notification.style.zIndex = '10000';
-  notification.style.fontWeight = '600';
-  notification.style.boxShadow = '0 3px 10px rgba(0, 0, 0, 0.2)';
-  
-  if (type === 'success') {
-    notification.style.backgroundColor = '#4CAF50';
-  } else {
-    notification.style.backgroundColor = '#e74c3c';
-  }
-  
-  document.body.appendChild(notification);
-  
-  setTimeout(() => {
-    notification.style.opacity = '0';
-    notification.style.transition = 'opacity 0.5s ease';
-    setTimeout(() => {
-      document.body.removeChild(notification);
-    }, 500);
-  }, 3000);
-}
-</script>
-</body>
-</html>
-}
-</script>
 </body>
 </html>
