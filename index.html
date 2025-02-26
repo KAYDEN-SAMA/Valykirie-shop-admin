@@ -1,33 +1,547 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=Edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <title>Admin For shop</title>
-  
-  <!-- HTML -->
-  
-
-  <!-- Custom Styles -->
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <title>هارو - لوحة المشرف</title>
+  <script src="https://kit.fontawesome.com/24b6a00007.js" crossorigin="anonymous"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Alexandria:wght@100..900&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    html {
+      position: relative;
+      min-height: 100%;
+      background-color: #fbf5f7;
+    }
+    
+    body {
+      margin: 0;
+      font-family: "Alexandria", sans-serif;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    
+    header {
+      background: linear-gradient(135deg, #f3a9c8, #f8d7e3);
+      padding: 1.5rem;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 10px rgba(209, 159, 178, 0.3);
+    }
+    
+    header h1 {
+      margin: 0;
+      font-weight: 700;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+      animation: fadeInDown 1s ease-in-out;
+    }
+    
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+      position: relative;
+    }
+    
+    /* Petals background */
+    .petal {
+      position: absolute;
+      background-color: #fff;
+      border-radius: 150% 0 150% 0;
+      animation: falling linear infinite;
+      z-index: 0;
+      opacity: 0.8;
+    }
+    
+    @keyframes falling {
+      0% {
+        top: -10%;
+        transform: rotate(0deg) translateX(0);
+      }
+      100% {
+        top: 100%;
+        transform: rotate(360deg) translateX(20px);
+      }
+    }
+    
+    #LoginForm {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(5px);
+      color: #333;
+      padding: 2em;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(209, 159, 178, 0.3);
+      width: 100%;
+      max-width: 400px;
+      margin-top: 5%;
+      position: relative;
+      z-index: 1;
+      animation: fadeInUp 1s ease-in-out;
+    }
+    
+    #LoginForm h2 {
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+      color: #e68fac;
+      text-align: center;
+      font-weight: 700;
+    }
+    
+    #LoginForm label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    #LoginForm input[type="email"],
+    #LoginForm input[type="password"],
+    #LoginForm input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 1.5rem;
+      border: 1px solid #e0e0e0;
+      background: rgba(255, 255, 255, 0.8);
+      color: #333;
+      border-radius: 10px;
+      font-family: "Alexandria", sans-serif;
+      transition: all 0.3s ease;
+    }
+    
+    #LoginForm input:focus {
+      outline: none;
+      border-color: #e68fac;
+      box-shadow: 0 0 0 3px rgba(230, 143, 172, 0.2);
+    }
+    
+    #LoginForm input[type="checkbox"] {
+      margin-right: 5px;
+    }
+    
+    #LoginForm button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 1.5rem;
+      background: linear-gradient(to right, #e68fac, #f8c4d9);
+      color: white;
+      font-family: "Alexandria", sans-serif;
+      font-weight: 600;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(230, 143, 172, 0.3);
+    }
+    
+    #LoginForm button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(230, 143, 172, 0.4);
+    }
+    
+    #LoginForm button:active {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 8px rgba(230, 143, 172, 0.3);
+    }
+    
+    .checkboxDiv {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      margin-bottom: 1rem;
+    }
+    
+    .content {
+      margin-left: 10px;
+    }
+    
+    #errorParagraph {
+      color: #e74c3c;
+      margin-bottom: 1rem;
+      font-size: 14px;
+      font-weight: 500;
+      text-align: center;
+      display: none;
+    }
+    
+    #dataSection {
+      width: 100%;
+      max-width: 1200px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .offer-card {
+      border-radius: 15px;
+      background-color: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(5px);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      box-shadow: 0 5px 15px rgba(209, 159, 178, 0.2);
+      transition: all 0.3s ease;
+    }
+    
+    .offer-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(209, 159, 178, 0.3);
+    }
+    
+    .offer-card div {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+    
+    .offer-card h3 {
+      font-weight: 600;
+      color: #e68fac;
+      margin: 0;
+    }
+    
+    .offer-card p {
+      font-weight: 500;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 60%;
+    }
+    
+    .cover-div {
+      display: flex;
+      flex-direction: column !important;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    
+    .cover-div img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-top: 0.5rem;
+      box-shadow: 0 3px 10px rgba(209, 159, 178, 0.2);
+    }
+    
+    i {
+      padding: 10px;
+      margin-right: 5px;
+      background: linear-gradient(to right, #e68fac, #f8c4d9);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 5px rgba(209, 159, 178, 0.2);
+    }
+    
+    i:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(209, 159, 178, 0.3);
+    }
+    
+    #addOfferDiv i {
+      font-size: 18px;
+      padding: 10px 15px;
+      border-radius: 50%;
+    }
+    
+    [contenteditable="true"] {
+      border: 2px solid #e68fac;
+      padding: 8px;
+      border-radius: 5px;
+      background-color: rgba(255, 255, 255, 0.9);
+      transition: all 0.3s ease;
+    }
+    
+    [contenteditable="true"]:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(230, 143, 172, 0.2);
+    }
+    
+    .dialog {
+      background-color: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      color: #333;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(209, 159, 178, 0.4);
+      padding: 2rem;
+      width: 90%;
+      max-width: 400px;
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1000;
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    .dialog > * {
+      margin-bottom: 1rem;
+    }
+    
+    .dialog h3 {
+      color: #e68fac;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    
+    .dialog label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    
+    .dialog input[type="text"],
+    .dialog input[type="number"],
+    .dialog input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #e0e0e0;
+      border-radius: 10px;
+      background-color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 1rem;
+      font-family: "Alexandria", sans-serif;
+    }
+    
+    .dialog input:focus {
+      outline: none;
+      border-color: #e68fac;
+      box-shadow: 0 0 0 3px rgba(230, 143, 172, 0.2);
+    }
+    
+    .buttons-div {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1.5rem;
+    }
+    
+    .modal-open {
+      overflow: hidden;
+    }
+    
+    .dialog img {
+      width: 80%;
+      margin: 1rem auto;
+      display: block;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    #confirmBtn {
+      background: linear-gradient(to right, #6bcf6b, #8fce8f);
+      color: white;
+      padding: 10px 20px;
+      width: 48%;
+      border: none;
+      border-radius: 10px;
+      font-family: "Alexandria", sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    #cancelBtn {
+      background: linear-gradient(to right, #e74c3c, #ff6b6b);
+      color: white;
+      padding: 10px 20px;
+      width: 48%;
+      border: none;
+      border-radius: 10px;
+      font-family: "Alexandria", sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    #confirmBtn:hover, #cancelBtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(3px);
+      z-index: 999;
+    }
+    
+    footer {
+      background: linear-gradient(135deg, #f8d7e3, #f3a9c8);
+      padding: 1.5rem;
+      color: white;
+      text-align: center;
+      margin-top: auto;
+      box-shadow: 0 -2px 10px rgba(209, 159, 178, 0.3);
+    }
+    
+    footer p {
+      margin: 0;
+      font-weight: 500;
+    }
+    
+    footer a {
+      color: white;
+      text-decoration: none;
+      font-weight: 700;
+      transition: all 0.3s ease;
+    }
+    
+    footer a:hover {
+      color: #fff;
+      text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+    }
+    
+    /* Custom checkbox styling */
+    .checkBox {
+      display: block;
+      cursor: pointer;
+      width: 18px;
+      height: 18px;
+      border: 2px solid #e68fac;
+      border-radius: 5px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .checkBox div {
+      width: 30px;
+      height: 30px;
+      background-color: #e68fac;
+      top: -52px;
+      left: -52px;
+      position: absolute;
+      transform: rotateZ(45deg);
+      z-index: 100;
+      transition: all 0.3s ease;
+    }
+    
+    .checkBox input[type=checkbox]:checked + div {
+      left: -10px;
+      top: -10px;
+    }
+    
+    .checkBox input[type=checkbox] {
+      position: absolute;
+      left: 50px;
+      visibility: hidden;
+    }
+    
+    .transition {
+      transition: 300ms ease;
+    }
+    
+    /* Animations */
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-15px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(15px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    
+    /* Responsive adjustments */
+    @media screen and (max-width: 768px) {
+      #LoginForm {
+        width: 90%;
+      }
+      
+      .dialog {
+        width: 95%;
+        padding: 1.5rem;
+      }
+      
+      #dataSection {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1.5rem;
+      }
+    }
+    
+    @media screen and (max-width: 480px) {
+      header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+      }
+      
+      #dataSection {
+        grid-template-columns: 1fr;
+      }
+      
+      .offer-card div {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+      
+      .offer-card p {
+        max-width: 100%;
+      }
+    }
+  </style>
 </head>
-
 <body>
   <header id="header">
-    <h1>المتجر</h1>
+    <h1>لوحة إدارة متجر هارو 🌸</h1>
     <div id="addOfferDiv"></div>
   </header>
+  
   <main>
     <section>
       <div id="LoginForm">
-        <h2>تسجيل الدخول</h2>
+        <h2>تسجيل الدخول للمشرف</h2>
         <label for="emailInput">البريد الإلكتروني</label>
-        <input type="email" id="emailInput">
-        <label for="input">كلمة السر: </label>
-        <input id="passwordInput" type="password">
+        <input type="email" id="emailInput" placeholder="أدخل البريد الإلكتروني">
+        <label for="passwordInput">كلمة المرور</label>
+        <input id="passwordInput" type="password" placeholder="أدخل كلمة المرور">
         <p id="errorParagraph"></p>
         <div class="checkboxDiv">
           <div class="content">
@@ -36,20 +550,600 @@
               <div class="transition"></div>
             </label>
           </div>
-          <label for='showPassword'>إظهار كلمة المرور</label>
+          <label for="showPassword">إظهار كلمة المرور</label>
         </div>
-        <p id="dialogueParagraph"></p>
         <button id="loginButton">تسجيل الدخول</button>
       </div>
     </section>
+    
     <section id="dataSection">
-      
+      <!-- Offer cards will be loaded here -->
     </section>
   </main>
+  
   <footer>
-    <p>كل الحقوق محفوظة <a href="https://wwhttps://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.cssw.instagram.com/arthur_sensai?igsh=MWdwbjI5YTluZTJyeQ==">ARTHUR</a></p>
+    <p>كل الحقوق محفوظة <a href="https://www.instagram.com/arthur_sensai?igsh=MWdwbjI5YTluZTJyeQ==">Arthur</a> &copy; 2025</p>
   </footer>
-  <!-- Project -->
-  <script src="main.js" type="module"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-app.js";
+    import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-database.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-auth.js";
+    import { setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDtN-6_8_adIwoOsdlymqz3OQlLTIO51BA",
+      authDomain: "valkiri-app.firebaseapp.com",
+      databaseURL: "https://valkiri-app-default-rtdb.firebaseio.com",
+      projectId: "valkiri-app",
+      storageBucket: "valkiri-app.appspot.com",
+      messagingSenderId: "28209650847",
+      appId: "1:28209650847:web:65f73e68bedf8b43f516aa"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+
+    const emailInput = document.getElementById("emailInput");
+    const passwordInput = document.getElementById("passwordInput");
+    const errorParagraph = document.getElementById("errorParagraph");
+    const loginButton = document.getElementById("loginButton");
+    const showPasswordCheckbox = document.getElementById("showPassword");
+    const loginForm = document.getElementById("LoginForm");
+    const dataSection = document.getElementById("dataSection");
+    
+    // Create floating petals effect
+    function createPetals() {
+      const petalCount = 15;
+      for (let i = 0; i < petalCount; i++) {
+        const petal = document.createElement('div');
+        petal.classList.add('petal');
+        
+        const size = Math.random() * 10 + 5;
+        const left = Math.random() * 100;
+        const delay = Math.random() * 10;
+        const duration = Math.random() * 10 + 10;
+        
+        petal.style.width = `${size}px`;
+        petal.style.height = `${size}px`;
+        petal.style.left = `${left}%`;
+        petal.style.animationDelay = `${delay}s`;
+        petal.style.animationDuration = `${duration}s`;
+        petal.style.backgroundColor = `rgba(255, ${Math.random() * 30 + 225}, ${Math.random() * 30 + 225}, ${Math.random() * 0.3 + 0.7})`;
+        
+        document.body.appendChild(petal);
+      }
+    }
+    createPetals();
+
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        loginForm.style.display = "none";
+        dataSection.style.display = "grid";
+        loadUserData(user);
+      } else {
+        loginForm.style.display = "block";
+        dataSection.style.display = "none";
+      }
+    });
+
+    function loadUserData(user) {
+      const adminUid = user.uid;
+      get(ref(db, `admins/${adminUid}`)).then(adminSnapshot => {
+        if (adminSnapshot.exists()) {
+          const data = adminSnapshot.val();
+          if(data.isAllowed === true){
+            loadOfferData();
+          }
+        }
+      });
+    }
+
+    function loadOfferData() {
+      const header = document.getElementById("header");
+      const addOfferDiv = document.getElementById("addOfferDiv");
+      get(ref(db, `shop`)).then(offersSnapchot => {
+        if (offersSnapchot.exists()) {
+          dataSection.innerHTML = "";
+          addOfferDiv.innerHTML = "";
+
+          const addOfferBtn = document.createElement('i');
+          addOfferBtn.className = "fa-sharp fa-solid fa-plus";
+          addOfferBtn.id = 'addOfferBtn';
+
+          addOfferDiv.appendChild(addOfferBtn);
+
+          addOfferBtn.addEventListener('click', () => {
+            // Create overlay for modal
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay';
+            document.body.appendChild(overlay);
+            overlay.style.display = 'block';
+            
+            const dialog = document.createElement('div');
+            dialog.className = 'dialog';
+            dialog.innerHTML = `
+              <h3>إضافة عرض جديد</h3>
+              <label for="title">العنوان:</label>
+              <input type="text" id="title" placeholder="العنوان" maxlength="12">
+              <label for="description">الوصف:</label>
+              <input type="text" id="description" placeholder="الوصف" maxlength="50">
+              <label for="price">السعر:</label>
+              <input type="number" id="price" placeholder="السعر">
+              <label for="coverInput">رفع الصورة:</label>
+              <input type="file" id="coverInput" accept="image/*">
+              <img id="coverPreview" style="display: none;" alt="معاينة الصورة">
+              <p id="errorElm" style="color: #e74c3c; font-size: 14px;"></p>
+              <div class="buttons-div">
+                <button id="confirmBtn">تأكيد</button>
+                <button id="cancelBtn">إلغاء</button>
+              </div>
+            `;
+            
+            document.body.appendChild(dialog);
+            document.body.classList.add('modal-open');
+
+            const confirmBtn = document.getElementById('confirmBtn');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const coverInput = document.getElementById('coverInput');
+            const coverPreview = document.getElementById('coverPreview');
+            const errorElm = document.getElementById('errorElm');
+
+            coverInput.addEventListener('change', function(event) {
+              const coverImageFile = event.target.files[0];
+              if (coverImageFile && coverImageFile.type.match('image.*')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                  coverPreview.src = e.target.result;
+                  coverPreview.style.display = "block";
+                };
+                reader.readAsDataURL(coverImageFile);
+              } else {
+                errorElm.textContent = "يرجى اختيار صورة صالحة";
+                coverPreview.style.display = "none";
+              }
+            });
+            
+            confirmBtn.addEventListener('click', async () => {
+              const titleInput = document.getElementById('title');
+              const descriptionInput = document.getElementById('description');
+              const priceInput = document.getElementById('price');
+
+              const title = titleInput.value.trim();
+              const description = descriptionInput.value.trim();
+              const price = priceInput.value.trim();
+
+              if (title === "" || description === "" || price === "") {
+                errorElm.textContent = "يرجى ملء جميع الحقول المطلوبة";
+                return;
+              }
+
+              if (!coverInput.files[0]) {
+                errorElm.textContent = "يرجى اختيار صورة للعرض";
+                return;
+              }
+
+              try {
+                const imgbbApiKey = '8b915a0e19cdf437724f69f8342d8a45';
+                const imageUrl = await uploadImage(imgbbApiKey, coverInput.files[0]);
+                const newOfferRef = ref(db, `shop/${title}`);
+                set(newOfferRef, {
+                  title: title,
+                  description: description,
+                  price: price,
+                  cover: imageUrl,
+                }).then(() => {
+                  showNotification('تم إضافة العرض بنجاح!');
+                  dialog.remove();
+                  overlay.remove();
+                  document.body.classList.remove('modal-open');
+                  location.reload();
+                }).catch(error => {
+                  errorElm.textContent = 'حدث خطأ أثناء إضافة العرض: ' + error.message;
+                });
+              } catch (error) {
+                console.error('Error uploading image:', error);
+                errorElm.textContent = "حدث خطأ أثناء رفع الصورة";
+              }
+            });
+
+            cancelBtn.addEventListener('click', () => {
+              dialog.remove();
+              overlay.remove();
+              document.body.classList.remove('modal-open');
+            });
+          });
+          
+          const offersData = offersSnapchot.val();
+          const sortedOfferIds = Object.keys(offersData).sort((a, b) => {
+            const valueA = offersData[a].toString();
+            const valueB = offersData[b].toString();
+            return valueA.localeCompare(valueB, 'ar');
+          });
+          
+          sortedOfferIds.forEach(offerId => {
+            const offerData = offersData[offerId];
+            createOfferCard(offerId, offerData);
+          });
+        } else {
+          addOfferDiv.innerHTML = "";
+
+          const addOfferBtn = document.createElement('i');
+          addOfferBtn.className = "fa-sharp fa-solid fa-plus";
+          addOfferBtn.id = 'addOfferBtn';
+
+          addOfferDiv.appendChild(addOfferBtn);
+          
+          // Show message when no offers exist
+          const noOffersMessage = document.createElement('div');
+          noOffersMessage.style.textAlign = 'center';
+          noOffersMessage.style.padding = '2rem';
+          noOffersMessage.style.width = '100%';
+          noOffersMessage.innerHTML = `
+            <h2 style="color: #e68fac; margin-bottom: 1rem;">لا توجد عروض حالياً</h2>
+            <p>اضغط على زر الإضافة لإنشاء عرض جديد</p>
+          `;
+          dataSection.appendChild(noOffersMessage);
+          
+          addOfferBtn.addEventListener('click', () => {
+            // Add new offer function would be called here
+            // Similar to the implementation above
+          });
+        }
+      });
+    }
+
+    async function uploadImage(apiKey, imageFile) {
+      const imgbbApiUrl = 'https://api.imgbb.com/1/upload';
+      const formData = new FormData();
+      formData.append('key', apiKey);
+      formData.append('image', imageFile);
+
+      const response = await fetch(imgbbApiUrl, {
+        method: 'POST',
+        body: formData,
+      });
+
+      const json = await response.json();
+      if (json.success) {
+        return json.data.url;
+      } else {
+        throw new Error('فشل رفع الصورة');
+      }
+    }
+
+    function createOfferCard(offerId, offerData) {
+      const card = document.createElement("div");
+      card.className = "offer-card";
+      
+      // Title section
+      const titleDiv = document.createElement("div");
+      const titleTitle = document.createElement("h3");
+      const titleEl = document.createElement("p");
+      titleTitle.textContent = "العنوان:";
+      titleEl.textContent = offerData.title;
+      titleEl.className = "offer-title";
+      coverImg.alt = offerData.title;
+coverDiv.appendChild(coverTitle);
+coverDiv.appendChild(coverImg);
+
+// Actions section (edit and delete buttons)
+const actionsDiv = document.createElement("div");
+actionsDiv.style.justifyContent = "center";
+actionsDiv.style.marginTop = "1rem";
+
+// Edit button
+const editBtn = document.createElement("i");
+editBtn.className = "fa-solid fa-pen-to-square";
+editBtn.title = "تعديل";
+
+// Delete button
+const deleteBtn = document.createElement("i");
+deleteBtn.className = "fa-solid fa-trash";
+deleteBtn.title = "حذف";
+
+actionsDiv.appendChild(editBtn);
+actionsDiv.appendChild(deleteBtn);
+
+// Add all sections to card
+card.appendChild(titleDiv);
+card.appendChild(descriptionDiv);
+card.appendChild(priceDiv);
+card.appendChild(coverDiv);
+card.appendChild(actionsDiv);
+
+// Add card to data section
+dataSection.appendChild(card);
+
+// Edit button functionality
+editBtn.addEventListener('click', () => {
+  // Create overlay for modal
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay';
+  document.body.appendChild(overlay);
+  overlay.style.display = 'block';
+  
+  const dialog = document.createElement('div');
+  dialog.className = 'dialog';
+  dialog.innerHTML = `
+    <h3>تعديل العرض</h3>
+    <label for="editTitle">العنوان:</label>
+    <input type="text" id="editTitle" placeholder="العنوان" maxlength="12" value="${offerData.title}">
+    <label for="editDescription">الوصف:</label>
+    <input type="text" id="editDescription" placeholder="الوصف" maxlength="50" value="${offerData.description}">
+    <label for="editPrice">السعر:</label>
+    <input type="number" id="editPrice" placeholder="السعر" value="${offerData.price}">
+    <label for="editCoverInput">تغيير الصورة (اختياري):</label>
+    <input type="file" id="editCoverInput" accept="image/*">
+    <img id="editCoverPreview" src="${offerData.cover}" alt="معاينة الصورة">
+    <p id="editErrorElm" style="color: #e74c3c; font-size: 14px;"></p>
+    <div class="buttons-div">
+      <button id="editConfirmBtn">حفظ التغييرات</button>
+      <button id="editCancelBtn">إلغاء</button>
+    </div>
+  `;
+  
+  document.body.appendChild(dialog);
+  document.body.classList.add('modal-open');
+
+  const editConfirmBtn = document.getElementById('editConfirmBtn');
+  const editCancelBtn = document.getElementById('editCancelBtn');
+  const editCoverInput = document.getElementById('editCoverInput');
+  const editCoverPreview = document.getElementById('editCoverPreview');
+  const editErrorElm = document.getElementById('editErrorElm');
+
+  editCoverInput.addEventListener('change', function(event) {
+    const coverImageFile = event.target.files[0];
+    if (coverImageFile && coverImageFile.type.match('image.*')) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        editCoverPreview.src = e.target.result;
+      };
+      reader.readAsDataURL(coverImageFile);
+    } else {
+      editErrorElm.textContent = "يرجى اختيار صورة صالحة";
+    }
+  });
+  
+  editConfirmBtn.addEventListener('click', async () => {
+    const editTitleInput = document.getElementById('editTitle');
+    const editDescriptionInput = document.getElementById('editDescription');
+    const editPriceInput = document.getElementById('editPrice');
+
+    const newTitle = editTitleInput.value.trim();
+    const newDescription = editDescriptionInput.value.trim();
+    const newPrice = editPriceInput.value.trim();
+
+    if (newTitle === "" || newDescription === "" || newPrice === "") {
+      editErrorElm.textContent = "يرجى ملء جميع الحقول المطلوبة";
+      return;
+    }
+
+    try {
+      let imageUrl = offerData.cover;
+      
+      // Only upload new image if file is selected
+      if (editCoverInput.files.length > 0) {
+        const imgbbApiKey = '8b915a0e19cdf437724f69f8342d8a45';
+        imageUrl = await uploadImage(imgbbApiKey, editCoverInput.files[0]);
+      }
+      
+      // If title changed, create new entry and delete old one
+      if (newTitle !== offerData.title) {
+        const newOfferRef = ref(db, `shop/${newTitle}`);
+        const oldOfferRef = ref(db, `shop/${offerId}`);
+        
+        set(newOfferRef, {
+          title: newTitle,
+          description: newDescription,
+          price: newPrice,
+          cover: imageUrl,
+        }).then(() => {
+          // Delete old entry
+          set(oldOfferRef, null).then(() => {
+            showNotification('تم تعديل العرض بنجاح!');
+            dialog.remove();
+            overlay.remove();
+            document.body.classList.remove('modal-open');
+            location.reload();
+          });
+        }).catch(error => {
+          editErrorElm.textContent = 'حدث خطأ أثناء تعديل العرض: ' + error.message;
+        });
+      } else {
+        // Update existing entry
+        const offerRef = ref(db, `shop/${offerId}`);
+        set(offerRef, {
+          title: newTitle,
+          description: newDescription,
+          price: newPrice,
+          cover: imageUrl,
+        }).then(() => {
+          showNotification('تم تعديل العرض بنجاح!');
+          dialog.remove();
+          overlay.remove();
+          document.body.classList.remove('modal-open');
+          location.reload();
+        }).catch(error => {
+          editErrorElm.textContent = 'حدث خطأ أثناء تعديل العرض: ' + error.message;
+        });
+      }
+    } catch (error) {
+      console.error('Error updating offer:', error);
+      editErrorElm.textContent = "حدث خطأ أثناء تعديل العرض";
+    }
+  });
+
+  editCancelBtn.addEventListener('click', () => {
+    dialog.remove();
+    overlay.remove();
+    document.body.classList.remove('modal-open');
+  });
+});
+
+// Delete button functionality
+deleteBtn.addEventListener('click', () => {
+  // Create overlay for confirmation dialog
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay';
+  document.body.appendChild(overlay);
+  overlay.style.display = 'block';
+  
+  const dialog = document.createElement('div');
+  dialog.className = 'dialog';
+  dialog.innerHTML = `
+    <h3>تأكيد الحذف</h3>
+    <p>هل أنت متأكد من حذف العرض "${offerData.title}"؟</p>
+    <div class="buttons-div">
+      <button id="deleteConfirmBtn">حذف</button>
+      <button id="deleteCancelBtn">إلغاء</button>
+    </div>
+  `;
+  
+  document.body.appendChild(dialog);
+  document.body.classList.add('modal-open');
+
+  const deleteConfirmBtn = document.getElementById('deleteConfirmBtn');
+  const deleteCancelBtn = document.getElementById('deleteCancelBtn');
+  
+  deleteConfirmBtn.addEventListener('click', () => {
+    const offerRef = ref(db, `shop/${offerId}`);
+    set(offerRef, null).then(() => {
+      showNotification('تم حذف العرض بنجاح!');
+      dialog.remove();
+      overlay.remove();
+      document.body.classList.remove('modal-open');
+      location.reload();
+    }).catch(error => {
+      console.error('Error deleting offer:', error);
+      showNotification('حدث خطأ أثناء حذف العرض', 'error');
+    });
+  });
+
+  deleteCancelBtn.addEventListener('click', () => {
+    dialog.remove();
+    overlay.remove();
+    document.body.classList.remove('modal-open');
+  });
+});
+}
+
+// Show password toggle functionality
+showPasswordCheckbox.addEventListener('change', () => {
+  if (showPasswordCheckbox.checked) {
+    passwordInput.type = "text";
+  } else {
+    passwordInput.type = "password";
+  }
+});
+
+// Login functionality
+loginButton.addEventListener('click', () => {
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
+  
+  if (email === "" || password === "") {
+    errorParagraph.textContent = "يرجى إدخال البريد الإلكتروني وكلمة المرور";
+    errorParagraph.style.display = "block";
+    return;
+  }
+  
+  setPersistence(auth, browserLocalPersistence)
+    .then(() => {
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          // Check if user is admin
+          get(ref(db, `admins/${user.uid}`)).then(adminSnapshot => {
+            if (adminSnapshot.exists()) {
+              const adminData = adminSnapshot.val();
+              if (adminData.isAllowed === true) {
+                errorParagraph.style.display = "none";
+                // Redirect to admin panel or show admin content
+              } else {
+                errorParagraph.textContent = "ليس لديك صلاحية للوصول إلى لوحة الإدارة";
+                errorParagraph.style.display = "block";
+                auth.signOut();
+              }
+            } else {
+              errorParagraph.textContent = "ليس لديك صلاحية للوصول إلى لوحة الإدارة";
+              errorParagraph.style.display = "block";
+              auth.signOut();
+            }
+          });
+        })
+        .catch((error) => {
+          if (error.code === "auth/invalid-email" || error.code === "auth/wrong-password" || error.code === "auth/user-not-found") {
+            errorParagraph.textContent = "البريد الإلكتروني أو كلمة المرور غير صحيحة";
+          } else {
+            errorParagraph.textContent = "خطأ في تسجيل الدخول: " + error.message;
+          }
+          errorParagraph.style.display = "block";
+        });
+    });
+});
+
+// Notification function
+function showNotification(message, type = 'success') {
+  const notification = document.createElement('div');
+  notification.textContent = message;
+  notification.style.position = 'fixed';
+  notification.style.bottom = '20px';
+  notification.style.right = '20px';
+  notification.style.padding = '10px 20px';
+  notification.style.borderRadius = '5px';
+  notification.style.color = '#fff';
+  notification.style.zIndex = '10000';
+  notification.style.fontWeight = '600';
+  notification.style.boxShadow = '0 3px 10px rgba(0, 0, 0, 0.2)';
+  
+  if (type === 'success') {
+    notification.style.backgroundColor = '#4CAF50';
+  } else {
+    notification.style.backgroundColor = '#e74c3c';
+  }
+  
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.style.opacity = '0';
+    notification.style.transition = 'opacity 0.5s ease';
+    setTimeout(() => {
+      document.body.removeChild(notification);
+    }, 500);
+  }, 3000);
+}
+</script>
 </body>
 </html>
+      titleDiv.appendChild(titleTitle);
+      titleDiv.appendChild(titleEl);
+      
+      // Description section
+      const descriptionDiv = document.createElement("div");
+      const descriptionTitle = document.createElement("h3");
+      const descriptionEl = document.createElement("p");
+      descriptionTitle.textContent = "الوصف:";
+      descriptionEl.textContent = offerData.description;
+      descriptionEl.className = "offer-description";
+      descriptionDiv.appendChild(descriptionTitle);
+      descriptionDiv.appendChild(descriptionEl);
+      
+      // Price section
+      const priceDiv = document.createElement("div");
+      const priceTitle = document.createElement("h3");
+      const priceEl = document.createElement("p");
+      priceTitle.textContent = "السعر:";
+      priceEl.textContent = offerData.price;
+      priceEl.className = "offer-price";
+      priceDiv.appendChild(priceTitle);
+      priceDiv.appendChild(priceEl);
+      
+      // Cover image section
+      const coverDiv = document.createElement("div");
+      coverDiv.className = "cover-div";
+      const coverTitle = document.createElement("h3");
+      coverTitle.textContent = "الصورة:";
+      const coverImg = document.createElement("img");
+      coverImg.src = offerData.cover;
