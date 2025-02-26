@@ -1146,4 +1146,296 @@ function showNotification(message, type = 'success') {
       const coverTitle = document.createElement("h3");
       coverTitle.textContent = "الصورة:";
       const coverImg = document.createElement("img");
-      coverImg.src = offerData.cover;
+      coverImg.alt = offerData.title;
+coverDiv.appendChild(coverTitle);
+coverDiv.appendChild(coverImg);
+
+// Actions section (edit and delete buttons)
+const actionsDiv = document.createElement("div");
+actionsDiv.style.justifyContent = "center";
+actionsDiv.style.marginTop = "1rem";
+
+// Edit button
+const editBtn = document.createElement("i");
+editBtn.className = "fa-solid fa-pen-to-square";
+editBtn.title = "تعديل";
+
+// Delete button
+const deleteBtn = document.createElement("i");
+deleteBtn.className = "fa-solid fa-trash";
+deleteBtn.title = "حذف";
+
+actionsDiv.appendChild(editBtn);
+actionsDiv.appendChild(deleteBtn);
+
+// Add all sections to card
+card.appendChild(titleDiv);
+card.appendChild(descriptionDiv);
+card.appendChild(priceDiv);
+card.appendChild(coverDiv);
+card.appendChild(actionsDiv);
+
+// Add card to data section
+dataSection.appendChild(card);
+
+// Edit button functionality
+editBtn.addEventListener('click', () => {
+  // Create overlay for modal
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay';
+  document.body.appendChild(overlay);
+  overlay.style.display = 'block';
+  
+  const dialog = document.createElement('div');
+  dialog.className = 'dialog';
+  dialog.innerHTML = `
+    <h3>تعديل العرض</h3>
+    <label for="editTitle">العنوان:</label>
+    <input type="text" id="editTitle" placeholder="العنوان" maxlength="12" value="${offerData.title}">
+    <label for="editDescription">الوصف:</label>
+    <input type="text" id="editDescription" placeholder="الوصف" maxlength="50" value="${offerData.description}">
+    <label for="editPrice">السعر:</label>
+    <input type="number" id="editPrice" placeholder="السعر" value="${offerData.price}">
+    <label for="editCoverInput">تغيير الصورة (اختياري):</label>
+    <input type="file" id="editCoverInput" accept="image/*">
+    <img id="editCoverPreview" src="${offerData.cover}" alt="معاينة الصورة">
+    <p id="editErrorElm" style="color: #e74c3c; font-size: 14px;"></p>
+    <div class="buttons-div">
+      <button id="editConfirmBtn">حفظ التغييرات</button>
+      <button id="editCancelBtn">إلغاء</button>
+    </div>
+  `;
+  
+  document.body.appendChild(dialog);
+  document.body.classList.add('modal-open');
+
+  const editConfirmBtn = document.getElementById('editConfirmBtn');
+  const editCancelBtn = document.getElementById('editCancelBtn');
+  const editCoverInput = document.getElementById('editCoverInput');
+  const editCoverPreview = document.getElementById('editCoverPreview');
+  const editErrorElm = document.getElementById('editErrorElm');
+
+  editCoverInput.addEventListener('change', function(event) {
+    const coverImageFile = event.target.files[0];
+    if (coverImageFile && coverImageFile.type.match('image.*')) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        editCoverPreview.src = e.target.result;
+      };
+      reader.readAsDataURL(coverImageFile);
+    } else {
+      editErrorElm.textContent = "يرجى اختيار صورة صالحة";
+    }
+  });
+  
+  editConfirmBtn.addEventListener('click', async () => {
+    const editTitleInput = document.getElementById('editTitle');
+    const editDescriptionInput = document.getElementById('editDescription');
+    const editPriceInput = document.getElementById('editPrice');
+
+    const newTitle = editTitleInput.value.trim();
+    const newDescription = editDescriptionInput.value.trim();
+    const newPrice = editPriceInput.value.trim();
+
+    if (newTitle === "" || newDescription === "" || newPrice === "") {
+      editErrorElm.textContent = "يرجى ملء جميع الحقول المطلوبة";
+      return;
+    }
+
+    try {
+      let imageUrl = offerData.cover;
+      
+      // Only upload new image if file is selected
+      if (editCoverInput.files.length > 0) {
+        const imgbbApiKey = '8b915a0e19cdf437724f69f8342d8a45';
+        imageUrl = await uploadImage(imgbbApiKey, editCoverInput.files[0]);
+      }
+      
+      // If title changed, create new entry and delete old one
+      if (newTitle !== offerData.title) {
+        const newOfferRef = ref(db, `shop/${newTitle}`);
+        const oldOfferRef = ref(db, `shop/${offerId}`);
+        
+        set(newOfferRef, {
+          title: newTitle,
+          description: newDescription,
+          price: newPrice,
+          cover: imageUrl,
+        }).then(() => {
+          // Delete old entry
+          set(oldOfferRef, null).then(() => {
+            showNotification('تم تعديل العرض بنجاح!');
+            dialog.remove();
+            overlay.remove();
+            document.body.classList.remove('modal-open');
+            location.reload();
+          });
+        }).catch(error => {
+          editErrorElm.textContent = 'حدث خطأ أثناء تعديل العرض: ' + error.message;
+        });
+      } else {
+        // Update existing entry
+        const offerRef = ref(db, `shop/${offerId}`);
+        set(offerRef, {
+          title: newTitle,
+          description: newDescription,
+          price: newPrice,
+          cover: imageUrl,
+        }).then(() => {
+          showNotification('تم تعديل العرض بنجاح!');
+          dialog.remove();
+          overlay.remove();
+          document.body.classList.remove('modal-open');
+          location.reload();
+        }).catch(error => {
+          editErrorElm.textContent = 'حدث خطأ أثناء تعديل العرض: ' + error.message;
+        });
+      }
+    } catch (error) {
+      console.error('Error updating offer:', error);
+      editErrorElm.textContent = "حدث خطأ أثناء تعديل العرض";
+    }
+  });
+
+  editCancelBtn.addEventListener('click', () => {
+    dialog.remove();
+    overlay.remove();
+    document.body.classList.remove('modal-open');
+  });
+});
+
+// Delete button functionality
+deleteBtn.addEventListener('click', () => {
+  // Create overlay for confirmation dialog
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay';
+  document.body.appendChild(overlay);
+  overlay.style.display = 'block';
+  
+  const dialog = document.createElement('div');
+  dialog.className = 'dialog';
+  dialog.innerHTML = `
+    <h3>تأكيد الحذف</h3>
+    <p>هل أنت متأكد من حذف العرض "${offerData.title}"؟</p>
+    <div class="buttons-div">
+      <button id="deleteConfirmBtn">حذف</button>
+      <button id="deleteCancelBtn">إلغاء</button>
+    </div>
+  `;
+  
+  document.body.appendChild(dialog);
+  document.body.classList.add('modal-open');
+
+  const deleteConfirmBtn = document.getElementById('deleteConfirmBtn');
+  const deleteCancelBtn = document.getElementById('deleteCancelBtn');
+  
+  deleteConfirmBtn.addEventListener('click', () => {
+    const offerRef = ref(db, `shop/${offerId}`);
+    set(offerRef, null).then(() => {
+      showNotification('تم حذف العرض بنجاح!');
+      dialog.remove();
+      overlay.remove();
+      document.body.classList.remove('modal-open');
+      location.reload();
+    }).catch(error => {
+      console.error('Error deleting offer:', error);
+      showNotification('حدث خطأ أثناء حذف العرض', 'error');
+    });
+  });
+
+  deleteCancelBtn.addEventListener('click', () => {
+    dialog.remove();
+    overlay.remove();
+    document.body.classList.remove('modal-open');
+  });
+});
+}
+
+// Show password toggle functionality
+showPasswordCheckbox.addEventListener('change', () => {
+  if (showPasswordCheckbox.checked) {
+    passwordInput.type = "text";
+  } else {
+    passwordInput.type = "password";
+  }
+});
+
+// Login functionality
+loginButton.addEventListener('click', () => {
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
+  
+  if (email === "" || password === "") {
+    errorParagraph.textContent = "يرجى إدخال البريد الإلكتروني وكلمة المرور";
+    errorParagraph.style.display = "block";
+    return;
+  }
+  
+  setPersistence(auth, browserLocalPersistence)
+    .then(() => {
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          // Check if user is admin
+          get(ref(db, `admins/${user.uid}`)).then(adminSnapshot => {
+            if (adminSnapshot.exists()) {
+              const adminData = adminSnapshot.val();
+              if (adminData.isAllowed === true) {
+                errorParagraph.style.display = "none";
+                // Redirect to admin panel or show admin content
+              } else {
+                errorParagraph.textContent = "ليس لديك صلاحية للوصول إلى لوحة الإدارة";
+                errorParagraph.style.display = "block";
+                auth.signOut();
+              }
+            } else {
+              errorParagraph.textContent = "ليس لديك صلاحية للوصول إلى لوحة الإدارة";
+              errorParagraph.style.display = "block";
+              auth.signOut();
+            }
+          });
+        })
+        .catch((error) => {
+          if (error.code === "auth/invalid-email" || error.code === "auth/wrong-password" || error.code === "auth/user-not-found") {
+            errorParagraph.textContent = "البريد الإلكتروني أو كلمة المرور غير صحيحة";
+          } else {
+            errorParagraph.textContent = "خطأ في تسجيل الدخول: " + error.message;
+          }
+          errorParagraph.style.display = "block";
+        });
+    });
+});
+
+// Notification function
+function showNotification(message, type = 'success') {
+  const notification = document.createElement('div');
+  notification.textContent = message;
+  notification.style.position = 'fixed';
+  notification.style.bottom = '20px';
+  notification.style.right = '20px';
+  notification.style.padding = '10px 20px';
+  notification.style.borderRadius = '5px';
+  notification.style.color = '#fff';
+  notification.style.zIndex = '10000';
+  notification.style.fontWeight = '600';
+  notification.style.boxShadow = '0 3px 10px rgba(0, 0, 0, 0.2)';
+  
+  if (type === 'success') {
+    notification.style.backgroundColor = '#4CAF50';
+  } else {
+    notification.style.backgroundColor = '#e74c3c';
+  }
+  
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.style.opacity = '0';
+    notification.style.transition = 'opacity 0.5s ease';
+    setTimeout(() => {
+      document.body.removeChild(notification);
+    }, 500);
+  }, 3000);
+}
+</script>
+</body>
+</html>
